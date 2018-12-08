@@ -1,0 +1,119 @@
+---
+title: "R Review for INFO201-au18"
+author: "Wayne Li"
+date: "December 5, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(textclean)
+```
+
+# Intro
+
+### A cheat sheet for future students based on my experience
+
+This is a blog post detailing useful functions and libraries that I have use in the INFO 201 class of University of Washington for R programming, I will try to give every function an example and some context, which should help you through some of the assignments.
+
+<br>
+
+## Let's start off with something easy... paste() and paste0()
+
+paste() function is something you would want when combining strings together, it's the eqivalent of Java's concat() function, not to be confused with cat() function in R, since that funtion would also print out the result to your console.
+
+Then we need to talk about the difference bewteen paste() and paste0(), put it simply, paste() adds a space (or other sep if you wish) between every element, and paste0() don't, you can decide what function to use. I brought this up because professor may only mention paste() first, without telling you that paste0() exist.
+
+Here's an example:
+
+```{r paste}
+p1 <- paste("Ok,", "my bad,", "sorry.")
+
+p2 <- paste0("Ok,", "my bad,", "sorry.")
+
+```
+
+<strong>p1</strong>: `r p1`
+
+<strong>p2</strong>: `r p2`
+
+<br>
+
+## Another string manipulation: gsub() and textclean::mgsub()
+
+Often at times, you want to replace some elements in your string, and if you only want to replace one element, for example, tabs into spaces, gsub("\\t", "\\s", text) really helps, and I believe gsub stands for global sub, so all occurrences should be covered.
+However, if you want to replace multiple elements, your code will start to get messy, which mgsub() comes in handy, you first have to install and load the library "textclean", then you put your desired patterns and replacements into a vector, the mgsub() will do the job nicely. (Notice the different syntax for these two functions.)
+
+
+```{r sub, warning = FALSE}
+# Some encoding error messed up your string!
+text <- "Half-Life 2 (stylized as HALF-LIFEÂ²), itâ€™s my favorite game."
+  
+text2 <- mgsub(text, c("Â²", "â€™"), c("²", "'"))
+
+# This function only does half the job, it only converts the first element it sees in the vector.
+text3 <- gsub(c("Â²", "â€™"), c("²", "'"), text)
+
+# If you want gsub to work, you need to do it twice, which is not cool.
+text4 <- gsub("Â²", "²", text)
+text5 <- gsub("â€™", "'", text4)
+```
+
+<strong>Text2</strong>: `r text2`
+
+<strong>Text3</strong>: `r text3`
+
+<strong>Text5</strong>: `r text5`
+
+<br>
+
+## Dataframe manipulation: unique(), jsonlite::flatten(), tidyr::unnest()
+
+Manipulating dataframes and making it spits out what you want is sometimes frustrating, especially after you wrote a bunch of code and got your desired result, then your mate tells you there's a simple function that only took 2 seconds to finish the job, your frustration will increase further by roughly 200%. To avoid this issue, I looked through my assignments and pick out some useful functions.
+
+<br>
+
+### 1. unique()
+Often at times you want every single unique element in your dataframe (or lists), so maybe you can perform surgery on different groups of patients, well, there's a function called "unique" that does exactly what you want! Take a look at the state.region dataframe (comes with base R), each element corresponds to every state's region, which states should be in alphabetical orders, and by using unique, we can see how many unique region there are:
+
+```{r region, warning = FALSE}
+state.region
+unique(state.region)
+```
+
+Now you can see there are five distinct elements in a vector!
+
+<br> 
+
+### 2. jsonlite::flatten()
+
+Whenever I tried to pull an API, their result is always in some kind of mystical nested dataframe, it looks fine when you try to print it in console, or View() it in RStudio, but once you try to do stuff on this column, R just spits out all kinds of ugly messages. For example,
+
+`Error: Column 'time_to_beat' must be a 1d atomic vector or a list`
+
+Flattening your dataframe early saves you a lot of trouble.
+
+<br>
+
+### 3. tidyr::unnest()
+
+Sometimes people who create dataframe decided to save spaces by combining similar rows, and save the differences in a list of vectors, for example, student b,c,d all have scores of 95, e,f all have scores of 90, why don't we combine them so the data looks tidier? (tidyr::nest()) However, it creates a problem for other people who wish to use this dataframe, like computing the average, you can't just take the average of those 3 numbers. Now the function unnest() from tidyr package becomes handy.
+
+```{r unnest0, echo = FALSE}
+df <- data.frame(score = c(100, 95, 90))
+df$name[1] <- "a"
+df$name[2] <- list(c("b", "c", "d"))
+df$name[3] <- list(c("e", "f"))
+```
+
+```{r unnest}
+library(tidyr)
+df
+df <- df %>% unnest(name)
+df
+```
+
+<br>
+
+Now you get pretty looking data that shows each individual person, isn't it wonderful?

@@ -114,6 +114,4 @@ df <- df %>% unnest(name)
 df
 ```
 
-<br>
-
 Now you get pretty looking data that shows each individual person, isn't it wonderful?
